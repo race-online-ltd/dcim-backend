@@ -7,6 +7,7 @@ use App\Models\SensorTypeList;
 use App\Models\StateConfig;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class SensorListController extends Controller
 {
@@ -209,7 +210,7 @@ class SensorListController extends Controller
                     throw new \Exception('Failed to insert state configurations');
                 }
 
-                \Log::info('State configs created for sensor', [
+                Log::info('State configs created for sensor', [
                     'sensor_id' => $sensorList->id,
                     'configs_count' => count($stateConfigs)
                 ]);
@@ -224,7 +225,7 @@ class SensorListController extends Controller
             // Rollback transaction on error
             DB::rollBack();
 
-            \Log::error('Sensor creation failed', [
+            Log::error('Sensor creation failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);

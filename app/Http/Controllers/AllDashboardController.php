@@ -109,20 +109,15 @@ class AllDashboardController extends Controller
                 ->orderBy('Sensor_type')
                 ->get();
 
-            $existingAcknowledgedSensors = AlarmAcknowledgement::whereIn('sensor_id', $sensorIds)
-            ->whereHas('sensor', function($query) use ($dataCenterId) {
-                $query->where('data_center_id', $dataCenterId);
-            })
-            ->pluck('sensor_id')
-            ->unique()
-            ->values()
-            ->toArray();
+                $existingAcknowledgedSensors = AlarmAcknowledgement::whereIn('sensor_id', $sensorIds)
+                ->pluck('sensor_id')
+                ->unique()
+                ->values()
+                ->toArray();
 
             // Find and delete acknowledgements for sensors not in the current request
             $deletedCount = AlarmAcknowledgement::whereNotIn('sensor_id', $sensorIds)
-            ->whereHas('sensor', function($query) use ($dataCenterId) {
-                $query->where('data_center_id', $dataCenterId);
-            })
+            
             ->delete();
 
                 $data = $data->map(function ($item) use ($existingAcknowledgedSensors) {

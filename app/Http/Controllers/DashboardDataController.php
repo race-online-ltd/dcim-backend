@@ -56,7 +56,7 @@ class DashboardDataController extends Controller
             FROM sensor_lists sl
 			INNER JOIN data_center_creations dcc ON sl.data_center_id = dcc.id
             INNER JOIN sensor_type_lists stl ON sl.sensor_type_list_id = stl.id
-            WHERE dcc.id = '$dataCenterId'
+            WHERE dcc.id IN ($dataCenterId)
             AND sl.status = 1
             GROUP BY stl.id,stl.name");
 

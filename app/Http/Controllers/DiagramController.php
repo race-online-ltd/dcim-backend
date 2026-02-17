@@ -115,7 +115,7 @@ class DiagramController extends Controller
                 'diagram' => $diagram
             ], 201);
 
-        } catch (ValidationException $e) {
+        } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'message' => 'Validation failed',
                 'errors' => $e->errors()
@@ -157,10 +157,8 @@ class DiagramController extends Controller
         try {
             $diagrams = Diagram::where('data_center_id', $dataCenterId)
                 ->orderBy('created_at', 'desc')
-                ->get(); // Get the collection of Diagram models
-//return 'here';
-            // Transform each diagram model to only include necessary fields for the list.
-            // Including 'svg_content' for sidebar preview.
+                ->get(); 
+
             $formattedDiagrams = $diagrams->map(function ($diagram) {
                 return [
                     'id' => $diagram->id,
@@ -224,7 +222,7 @@ class DiagramController extends Controller
             $diagram = Svg::where('datacenter_id', $id)->first();
             return $this->successResponse($diagram, 'Success');
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage());
         }
     }

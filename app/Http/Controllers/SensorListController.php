@@ -390,4 +390,49 @@ class SensorListController extends Controller
             ], 500);
         }
     }
+
+
+
+    public function getDevicesByDataCenter($dataCenterIds)
+    {
+        try {
+            $ids = explode(',', $dataCenterIds);
+            $ids = array_map('intval', array_filter($ids));
+
+            if (empty($ids)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid data center IDs'
+                ], 400);
+            }
+
+            $data = DB::select(
+                "
+                SELECT dcc.id AS datacenter_id, dcc.name AS datacenter,dl.id AS device_id, dl.name AS device, dl.is_active,
+                    dl.location, dl.updated_at
+                FROM device_lists dl
+                JOIN data_center_creations dcc ON dl.data_center_id = dcc.id
+                WHERE dl.status = 1
+                AND dcc.id IN (" . implode(',', array_fill(0, count($ids), '?')) . ")
+                ORDER BY dcc.id, dl.id
+                ",
+                $ids
+            );
+
+            return response()->json([
+                'success' => true,
+                'data'    => $data,
+                'count'   => count($data)
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error fetching devices by data center: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch devices',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
 }

@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('location', 255);
             $table->string('secret_key', 255);
             $table->tinyInteger('status')->length(2);
+            $table->integer('is_active')->length(2)->default(1);
             $table->timestamps();
 
             // Optional foreign key constraint

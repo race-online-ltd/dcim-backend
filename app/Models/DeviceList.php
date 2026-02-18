@@ -12,7 +12,7 @@ class DeviceList extends Model
 
     protected $table = 'device_lists';
     protected $fillable = [
-        'name', 'data_center_id','location', 'secret_key','control_topic','status'
+        'name', 'data_center_id','location', 'secret_key','control_topic','status','is_active',
     ];
 
     public function dataCenter(): BelongsTo

@@ -68,7 +68,7 @@ class MqttController extends Controller
         $this->mqtt->proc();
 
         $sensorData = DB::table('sensor_data')->orderBy('created_at', 'desc')->get();
-        \Log::info('Sensor Data Retrieved:', ['data' => $sensorData]);
+        Log::info('Sensor Data Retrieved:', ['data' => $sensorData]);
 
         return view('mqtt.index', ['sensorData' => $sensorData]);
     }

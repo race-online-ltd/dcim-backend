@@ -185,7 +185,7 @@ class DataCenterController extends Controller
     public function index()
     {
         $dataCenters = DataCenterCreation::with('ownerType')
-            ->orderBy('id', 'asc')
+            ->orderBy('id', 'desc')
             ->get();
 
         return response()->json($dataCenters);

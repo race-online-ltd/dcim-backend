@@ -16,7 +16,9 @@ class StateConfigController extends Controller
     public function index()
     {
 
-        return StateConfig::with(['sensor.device.dataCenter','sensor.sensorType'])->get();
+        return StateConfig::with(['sensor.device.dataCenter','sensor.sensorType'])
+        ->orderBy('id', 'desc')
+        ->get();
     }
 
     public function store(Request $request)

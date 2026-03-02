@@ -20,7 +20,9 @@ class ThresholdValueController extends Controller
                 'sensor.dataCenter', // ensure you use the correct relationship name
                 'thresholdType',
                 'sensor.sensorType'
-            ])->get()
+            ])
+            ->orderBy('id', 'desc')
+            ->get()
         );
     }
 

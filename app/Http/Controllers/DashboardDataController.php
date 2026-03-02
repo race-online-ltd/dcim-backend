@@ -48,16 +48,16 @@ class DashboardDataController extends Controller
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
 
         $thresholds = DB::connection('mysql')->select("
-            SELECT 
-                tv.sensor_id, 
-                tv.threshold_type_id, 
-                tv.threshold, 
-                ty.name threshold_name, 
-                ty.color, 
-                sl.location, 
-                stl.id sensor_type, 
+            SELECT
+                tv.sensor_id,
+                tv.threshold_type_id,
+                tv.threshold,
+                ty.name threshold_name,
+                ty.color,
+                sl.location,
+                stl.id sensor_type,
                 stl.name sensor_type_name,
-                dcc.id dc_id, 
+                dcc.id dc_id,
                 dcc.name dc_name
             FROM threshold_values tv
             INNER JOIN threshold_types ty ON tv.threshold_type_id = ty.id
@@ -178,13 +178,15 @@ class DashboardDataController extends Controller
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
 
         $thresholds = DB::connection('mysql')->select("
-            SELECT 
+            SELECT
                 sc.sensor_id,
                 sc.path,
                 slt.id AS type_id,
                 slt.name AS type_name,
                 sc.value AS state_value,
                 sc.name AS state_name,
+                sc.sound,
+                sc.blink,
                 sl.location,
                 sl.sensor_name,
                 sc.color,

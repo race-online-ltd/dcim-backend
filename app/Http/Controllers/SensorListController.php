@@ -37,7 +37,9 @@ class SensorListController extends Controller
         }
 
         // Get the results from the database
-        $sensorLists = $query->get();
+        $sensorLists = $query
+        ->orderBy('id', 'desc')
+        ->get();
 
         // Return the sensor lists as a JSON response
         return response()->json($sensorLists);
@@ -365,7 +367,7 @@ class SensorListController extends Controller
 
             $data = DB::select(
                 "
-                SELECT 
+                SELECT
                     v.sensor_id,
                     v.value,
                     COALESCE(
@@ -394,7 +396,7 @@ class SensorListController extends Controller
 
                 LEFT JOIN threshold_values tv  ON v.sensor_id = tv.sensor_id
                 WHERE s.data_center_id IN (" . implode(',', array_fill(0, count($ids), '?')) . ")
-                GROUP BY 
+                GROUP BY
                 v.sensor_id,
                 v.value,
                 s.data_center_id,
@@ -416,7 +418,7 @@ class SensorListController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Error fetching sensor real-time data: ' . $e->getMessage());
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to fetch sensor real-time data',

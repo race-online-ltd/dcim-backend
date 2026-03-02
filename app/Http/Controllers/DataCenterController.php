@@ -173,11 +173,21 @@ class DataCenterController extends Controller
         return response()->json($dataCenters);
     }
 
+    // public function index()
+    // {
+    //     $dataCenters = DataCenterCreation::with('ownerType')
+    //         ->orderByDesc('created_at')
+    //         ->get();
+    //     return response()->json($dataCenters);
+    // }
+
+
     public function index()
     {
         $dataCenters = DataCenterCreation::with('ownerType')
-            ->orderByDesc('created_at')
+            ->orderBy('id', 'asc')
             ->get();
+
         return response()->json($dataCenters);
     }
 

@@ -327,6 +327,15 @@ class SensorListController extends Controller
         return response()->json($sensors);
     }
 
+
+    public function getByDeviceThreshold($deviceId)
+    {
+        $sensors = SensorList::where('device_id', $deviceId)
+            ->where('trigger_type_id', 1)
+            ->get();
+        return response()->json($sensors);
+    }
+
     // public function getSensorByDataCenter($dataCenterId)
     // {
     //     $data = DB::select(

@@ -283,6 +283,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         //    Route::get('/fetch-sensortype-list', [SensorTypeListController::class, 'fetchSensorTypeList']);
 
             Route::get('/by-device/{deviceId}/{sensorTypeId}', [SensorListController::class, 'getByDevice']);
+            Route::get('/by-device-threshold/{deviceId}', [SensorListController::class, 'getByDeviceThreshold']);
 
         });
         Route::prefix('state-configs')->group(function () {
@@ -391,6 +392,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
 Route::prefix('alarm')->group(function () {
     Route::post('/sensor-details', [AllDashboardController::class, 'getrDataCenterAlarmDetails']);
     Route::post('/store', [AlarmDetailsController::class, 'acknowledgementStore']);
+
+    Route::post('/sync-acknowledgements', [AlarmDetailsController::class, 'syncAndCountAcknowledgements']);
 
 
 });

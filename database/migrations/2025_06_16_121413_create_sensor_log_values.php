@@ -12,38 +12,61 @@ return new class extends Migration
      *
      * @return void
      */
+    // public function up()
+    // {
+    //     // Drop the table if it already exists to allow for re-running migrations
+    //     Schema::dropIfExists('sensor_log_values');
+
+    //     // Use DB::statement to create the table with partitioning syntax
+    //     // Primary key MUST include the partitioning column (created_at)
+    //     // UNIX_TIMESTAMP(created_at) is used because RANGE partitioning requires an integer expression.
+    //     // We're creating partitions based on the start of each week.
+    //     DB::statement("
+    //         CREATE TABLE sensor_log_values (
+    //             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    //             sensor_id BIGINT UNSIGNED NOT NULL,
+    //             value VARCHAR(255) NOT NULL,
+    //             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    //             updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    //             PRIMARY KEY (id, created_at) -- Primary key MUST include 'created_at' for partitioning
+    //         )
+    //         PARTITION BY RANGE (UNIX_TIMESTAMP(created_at)) (
+    //             " . $this->generateInitialPartitions(5) . " -- Generate initial partitions for current + next 4 weeks
+    //         );
+    //     ");
+
+    //     // The foreign key constraint has been removed here due to MySQL/MariaDB limitation:
+    //     // "Partitioned tables do not support FOREIGN KEY".
+    //     // You will need to enforce referential integrity at the application level.
+
+    //     Schema::table('sensor_log_values', function (Blueprint $table) {
+    //         // Add the composite index as originally requested, outside the PK
+    //         // This can still be beneficial for queries filtering by sensor_id first.
+    //         $table->index(['sensor_id', 'created_at']);
+    //     });
+    // }
+
+
     public function up()
     {
-        // Drop the table if it already exists to allow for re-running migrations
         Schema::dropIfExists('sensor_log_values');
 
-        // Use DB::statement to create the table with partitioning syntax
-        // Primary key MUST include the partitioning column (created_at)
-        // UNIX_TIMESTAMP(created_at) is used because RANGE partitioning requires an integer expression.
-        // We're creating partitions based on the start of each week.
         DB::statement("
             CREATE TABLE sensor_log_values (
                 id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
                 sensor_id BIGINT UNSIGNED NOT NULL,
                 value VARCHAR(255) NOT NULL,
-                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                PRIMARY KEY (id, created_at) -- Primary key MUST include 'created_at' for partitioning
+                created_at DATETIME NOT NULL,
+                updated_at DATETIME NULL,
+                PRIMARY KEY (id, created_at),
+                INDEX idx_sensor_created (sensor_id, created_at)
             )
-            PARTITION BY RANGE (UNIX_TIMESTAMP(created_at)) (
-                " . $this->generateInitialPartitions(5) . " -- Generate initial partitions for current + next 4 weeks
+            PARTITION BY RANGE (TO_DAYS(created_at)) (
+                PARTITION p202603 VALUES LESS THAN (TO_DAYS('2026-04-01')),
+                PARTITION p202604 VALUES LESS THAN (TO_DAYS('2026-05-01')),
+                PARTITION p202605 VALUES LESS THAN (TO_DAYS('2026-06-01'))
             );
         ");
-
-        // The foreign key constraint has been removed here due to MySQL/MariaDB limitation:
-        // "Partitioned tables do not support FOREIGN KEY".
-        // You will need to enforce referential integrity at the application level.
-
-        Schema::table('sensor_log_values', function (Blueprint $table) {
-            // Add the composite index as originally requested, outside the PK
-            // This can still be beneficial for queries filtering by sensor_id first.
-            $table->index(['sensor_id', 'created_at']);
-        });
     }
 
     /**

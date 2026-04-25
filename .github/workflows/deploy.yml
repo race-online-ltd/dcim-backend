@@ -27,7 +27,7 @@ jobs:
       - name: 3. Install Composer Dependencies
         run: |
           cd /var/www/html/application/backend
-          composer install --no-dev --optimize-autoloader
+          composer install --no-dev --optimize-autoloader --no-scripts
 
       - name: 4. Set Permissions (SAFE)
         run: |

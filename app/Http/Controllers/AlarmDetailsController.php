@@ -357,9 +357,18 @@ public function alarmLogs(Request $request)
             'sl.location',
             'sft.value as acknowledge_alarm_value',
             'sft.acknowledgement_status',
+            'sft.description',
             'sft.checked_by',
             'u.username as acknowledge_by',
-            'sft.updated_at as acknowledge_at',
+
+            // ✅ Updated condition here
+            DB::raw("
+                CASE
+                    WHEN sft.acknowledgement_status IS NULL THEN NULL
+                    ELSE sft.updated_at
+                END AS acknowledge_at
+            "),
+
             DB::raw("
                 CASE
                     WHEN sft.acknowledgement_status = 1 THEN 'Acknowledged'

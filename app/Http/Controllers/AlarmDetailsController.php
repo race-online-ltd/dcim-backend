@@ -344,84 +344,84 @@ public function acknowledgementStore(Request $request)
 // }
 
 
-public function alarmLogs(Request $request)
-{
-    $query = DB::table('sensor_lists as sl')
-        ->select(
-            'dc.name as datacenter_name',
-            'stl.name as sensor_type',
-            'sl.id as sensor_id',
-            'sl.sensor_name',
-            'sft.value as alarm_value',
-            'sft.created_at as alarm_raised_at',
-            'sl.location',
-            'sft.value as acknowledge_alarm_value',
-            'sft.acknowledgement_status',
-            'sft.description',
-            'sft.checked_by',
-            'u.username as acknowledge_by',
+    public function alarmLogs(Request $request)
+    {
+        $query = DB::table('sensor_lists as sl')
+            ->select(
+                'dc.name as datacenter_name',
+                'stl.name as sensor_type',
+                'sl.id as sensor_id',
+                'sl.sensor_name',
+                'sft.value as alarm_value',
+                'sft.created_at as alarm_raised_at',
+                'sl.location',
+                'sft.value as acknowledge_alarm_value',
+                'sft.acknowledgement_status',
+                'sft.description',
+                'sft.checked_by',
+                'u.username as acknowledge_by',
 
-            // ✅ Updated condition here
-            DB::raw("
-                CASE
-                    WHEN sft.acknowledgement_status IS NULL THEN NULL
-                    ELSE sft.updated_at
-                END AS acknowledge_at
-            "),
+                // ✅ Updated condition here
+                DB::raw("
+                    CASE
+                        WHEN sft.acknowledgement_status IS NULL THEN NULL
+                        ELSE sft.updated_at
+                    END AS acknowledge_at
+                "),
 
-            DB::raw("
-                CASE
-                    WHEN sft.acknowledgement_status = 1 THEN 'Acknowledged'
-                    ELSE 'Not Acknowledged'
-                END AS acknowledge_status
-            ")
-        )
-        ->join('data_center_creations as dc', 'dc.id', '=', 'sl.data_center_id')
-        ->join('sensor_type_lists as stl', 'stl.id', '=', 'sl.sensor_type_list_id')
-        ->join('sensor_fault_tables as sft', 'sft.sensor_id', '=', 'sl.id')
-        ->leftJoin('users as u', 'sft.checked_by', '=', 'u.id');
+                DB::raw("
+                    CASE
+                        WHEN sft.acknowledgement_status = 1 THEN 'Acknowledged'
+                        ELSE 'Not Acknowledged'
+                    END AS acknowledge_status
+                ")
+            )
+            ->join('data_center_creations as dc', 'dc.id', '=', 'sl.data_center_id')
+            ->join('sensor_type_lists as stl', 'stl.id', '=', 'sl.sensor_type_list_id')
+            ->join('sensor_fault_tables as sft', 'sft.sensor_id', '=', 'sl.id')
+            ->leftJoin('users as u', 'sft.checked_by', '=', 'u.id');
 
-    // 🔍 FILTERS
-    if ($request->filled('datacenter')) {
-        $query->where('dc.id', $request->datacenter);
-    }
-
-    if ($request->filled('sensor_type')) {
-        $query->where('stl.id', $request->sensor_type);
-    }
-
-    if ($request->filled('sensor_id')) {
-        $query->where('sl.id', $request->sensor_id);
-    }
-
-    if ($request->filled('acknowledge_by')) {
-        $query->where('sft.checked_by', $request->acknowledge_by);
-    }
-
-    if ($request->filled('status')) {
-        if ($request->status == 'Acknowledged') {
-            $query->where('sft.acknowledgement_status', 1);
-        } else {
-            $query->where(function ($q) {
-                $q->whereNull('sft.acknowledgement_status')
-                  ->orWhere('sft.acknowledgement_status', '!=', 1);
-            });
+        // 🔍 FILTERS
+        if ($request->filled('datacenter')) {
+            $query->where('dc.id', $request->datacenter);
         }
+
+        if ($request->filled('sensor_type')) {
+            $query->where('stl.id', $request->sensor_type);
+        }
+
+        if ($request->filled('sensor_id')) {
+            $query->where('sl.id', $request->sensor_id);
+        }
+
+        if ($request->filled('acknowledge_by')) {
+            $query->where('sft.checked_by', $request->acknowledge_by);
+        }
+
+        if ($request->filled('status')) {
+            if ($request->status == 'Acknowledged') {
+                $query->where('sft.acknowledgement_status', 1);
+            } else {
+                $query->where(function ($q) {
+                    $q->whereNull('sft.acknowledgement_status')
+                    ->orWhere('sft.acknowledgement_status', '!=', 1);
+                });
+            }
+        }
+
+        $perPage = $request->get('per_page', 10);
+
+        $data = $query
+            ->orderByRaw('sft.acknowledgement_status IS NULL DESC')
+            ->orderBy('sft.created_at', 'desc')
+            ->paginate($perPage);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Alarm report fetched successfully',
+            'data'    => $data
+        ]);
     }
-
-    $perPage = $request->get('per_page', 10);
-
-    $data = $query
-        ->orderByRaw('sft.acknowledgement_status IS NULL DESC')
-        ->orderBy('sft.created_at', 'desc')
-        ->paginate($perPage);
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Alarm report fetched successfully',
-        'data'    => $data
-    ]);
-}
 
 
 }

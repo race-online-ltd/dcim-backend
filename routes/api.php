@@ -31,6 +31,7 @@ use App\Http\Controllers\AllDashboardController;
 use App\Http\Controllers\AlarmDetailsController;
 use App\Http\Controllers\RemoteDeviceController;
 use App\Http\Controllers\DoConfigController;
+use App\Http\Controllers\ReportController;
 
 
 
@@ -224,6 +225,9 @@ Route::get('/operation-schedulling', [DoConfigController::class, 'schedullingLis
 Route::get('/operation-repeat', [DoConfigController::class, 'repeatList']);
 Route::post('/store-control-configurations', [DoConfigController::class, 'storeOperationTrigger']);
 
+
+
+
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::resource('roles', RoleController::class);
     //    Route::resource('users', UserController::class);
@@ -390,14 +394,16 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 
 Route::prefix('alarm')->group(function () {
+    Route::get('/report/sensor-log', [ReportController::class, 'getSensorData']); 
     Route::post('/sensor-details', [AllDashboardController::class, 'getrDataCenterAlarmDetails']);
     Route::post('/store', [AlarmDetailsController::class, 'acknowledgementStore']);
     Route::post('/acknowledge', [AlarmDetailsController::class, 'syncAndCountAcknowledgements']);
     Route::post('/sensor-fault/store', [AlarmDetailsController::class, 'storeSensorFault']);
     Route::get('/report', [AlarmDetailsController::class, 'alarmLogs']);
-
+    // Route::get('/report/sensor-logs', [AlarmDetailsController::class, 'sensorAlarmLogs']);
 
 });
+
 
 
 

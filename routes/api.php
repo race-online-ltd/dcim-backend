@@ -393,17 +393,19 @@ Route::middleware(['auth:sanctum'])->group(function () {
 });
 
 
-Route::prefix('alarm')->group(function () {
-    Route::get('/report/sensor-log', [ReportController::class, 'getSensorData']); 
-    Route::post('/sensor-details', [AllDashboardController::class, 'getrDataCenterAlarmDetails']);
-    Route::post('/store', [AlarmDetailsController::class, 'acknowledgementStore']);
-    Route::post('/acknowledge', [AlarmDetailsController::class, 'syncAndCountAcknowledgements']);
-    Route::post('/sensor-fault/store', [AlarmDetailsController::class, 'storeSensorFault']);
-    Route::get('/report', [AlarmDetailsController::class, 'alarmLogs']);
-    // Route::get('/report/sensor-logs', [AlarmDetailsController::class, 'sensorAlarmLogs']);
+    Route::prefix('alarm')->group(function () {
+        Route::get('/report/sensor-log', [ReportController::class, 'getSensorData']); 
+        Route::post('/sensor-details', [AllDashboardController::class, 'getrDataCenterAlarmDetails']);
+        Route::post('/store', [AlarmDetailsController::class, 'acknowledgementStore']);
+        Route::post('/acknowledge', [AlarmDetailsController::class, 'syncAndCountAcknowledgements']);
+        Route::post('/sensor-fault/store', [AlarmDetailsController::class, 'storeSensorFault']);
+        Route::get('/report', [AlarmDetailsController::class, 'alarmLogs']);
+        // Route::get('/report/sensor-logs', [AlarmDetailsController::class, 'sensorAlarmLogs']);
 
-});
+    });
 
+
+    Route::get('/sensor-locations', [ReportController::class, 'getSensorLocations']);
 
 
 

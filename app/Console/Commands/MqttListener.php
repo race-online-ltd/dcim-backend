@@ -298,13 +298,11 @@ class MqttListener extends Command
     //         $this->error("Could not connect to MQTT broker");
     //     }
     // }
-
-
     
 
     public function handle()
     {
-        $server = env('MQTT_HOST', '182.48.80.230');
+        $server = env('MQTT_HOST', '172.17.118.138');
         $port = env('MQTT_PORT', 1883);
         $username = env('MQTT_USERNAME', 'test');
         $password = env('MQTT_PASSWORD', 'test');
@@ -332,7 +330,7 @@ class MqttListener extends Command
 
                         event(new MQTTPublishEvent($data));
 
-                        Log::info("MQTT Message Received on topic [$topic]:", $data);
+                        // Log::info("MQTT Message Received on topic [$topic]:", $data);
 
                         echo "Received from $topic: " . print_r($data, true) . "\n";
 

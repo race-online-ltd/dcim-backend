@@ -304,8 +304,8 @@ class MqttListener extends Command
     {
         $server = env('MQTT_HOST', '172.17.118.138');
         $port = env('MQTT_PORT', 1883);
-        $username = env('MQTT_USERNAME', 'test');
-        $password = env('MQTT_PASSWORD', 'test');
+        $username = env('MQTT_USERNAME', 'admin');
+        $password = env('MQTT_PASSWORD', 'Power-RnD');
         $client_id = 'laravel_mqtt_listener_' . uniqid();
 
         $mqtt = new phpMQTT($server, $port, $client_id);

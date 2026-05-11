@@ -32,6 +32,10 @@ use App\Http\Controllers\AlarmDetailsController;
 use App\Http\Controllers\RemoteDeviceController;
 use App\Http\Controllers\DoConfigController;
 use App\Http\Controllers\ReportController;
+// Controllers for UPS, UPS Models, and Register Address
+use App\Http\Controllers\UpsController;
+use App\Http\Controllers\UpsModelController;
+use App\Http\Controllers\RegisterAddressController;
 
 
 
@@ -296,6 +300,32 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('/{stateConfig}', [StateConfigController::class, 'show'])->middleware('can:state-show')->name('state-show');
             Route::put('/{stateConfig}', [StateConfigController::class, 'update'])->middleware('can:state-edit')->name('state-edit');
             Route::delete('/{stateConfig}', [StateConfigController::class, 'destroy'])->middleware('can:state-delete')->name('state-delete');
+        });
+
+
+        // Route for UPS, UPS Models, and Register Address created by rimon
+        Route::prefix('ups')->name('ups.')->group(function () {
+            Route::get('/',          [UpsController::class, 'index']);
+            Route::post('/',         [UpsController::class, 'store']);
+            Route::get('/{id}',      [UpsController::class, 'show']);
+            Route::put('/{id}',      [UpsController::class, 'update']);
+            Route::delete('/{id}',   [UpsController::class, 'destroy']);
+        });
+
+        Route::prefix('ups-models')->name('ups-models.')->group(function () {
+            Route::get('/',          [UpsModelController::class, 'index']);
+            Route::post('/',         [UpsModelController::class, 'store']);
+            Route::get('/{id}',      [UpsModelController::class, 'show']);
+            Route::put('/{id}',      [UpsModelController::class, 'update']);
+            Route::delete('/{id}',   [UpsModelController::class, 'destroy']);
+        });
+
+        Route::prefix('register-addresses')->name('register-addresses.')->group(function () {
+            Route::get('/',          [RegisterAddressController::class, 'index']);
+            Route::post('/',         [RegisterAddressController::class, 'store']);
+            Route::get('/{id}',      [RegisterAddressController::class, 'show']);
+            Route::put('/{id}',      [RegisterAddressController::class, 'update']);
+            Route::delete('/{id}',   [RegisterAddressController::class, 'destroy']);
         });
 
 

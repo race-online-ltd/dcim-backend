@@ -36,6 +36,8 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UpsController;
 use App\Http\Controllers\UpsModelController;
 use App\Http\Controllers\RegisterAddressController;
+use App\Http\Controllers\UpsModelConfigController;
+use App\Http\Controllers\ModelWiseAddressMappingController;
 
 
 
@@ -326,6 +328,22 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('/{id}',      [RegisterAddressController::class, 'show']);
             Route::put('/{id}',      [RegisterAddressController::class, 'update']);
             Route::delete('/{id}',   [RegisterAddressController::class, 'destroy']);
+        });
+
+        Route::prefix('model-wise-address-mappings')->name('model-wise-address-mappings.')->group(function () {
+            Route::get('/',        [ModelWiseAddressMappingController::class, 'index']);
+            Route::post('/',       [ModelWiseAddressMappingController::class, 'store']);
+            Route::get('/{id}',    [ModelWiseAddressMappingController::class, 'show']);
+            Route::put('/{id}',    [ModelWiseAddressMappingController::class, 'update']);
+            Route::delete('/{id}', [ModelWiseAddressMappingController::class, 'destroy']);
+        });
+
+        Route::prefix('ups-model-config')->name('ups-model-config.')->group(function () {
+            Route::get('/',        [UpsModelConfigController::class, 'index']);
+            Route::post('/',       [UpsModelConfigController::class, 'store']);
+            Route::get('/{id}',    [UpsModelConfigController::class, 'show']);
+            Route::put('/{id}',    [UpsModelConfigController::class, 'update']);
+            Route::delete('/{id}', [UpsModelConfigController::class, 'destroy']);
         });
 
 

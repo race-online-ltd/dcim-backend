@@ -24,7 +24,7 @@ class UpsModelController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'name'     => 'required|string|max:255',
+            'name'     => 'required|string|max:255|unique:ups_models,name',
             'protocol' => 'required|string|max:255',
         ]);
 
@@ -69,7 +69,7 @@ class UpsModelController extends Controller
         }
 
         $validated = $request->validate([
-            'name'     => 'sometimes|required|string|max:255',
+            'name'     => 'sometimes|required|string|max:255|unique:ups_models,name,' . $model->id,
             'protocol' => 'sometimes|required|string|max:255',
         ]);
 

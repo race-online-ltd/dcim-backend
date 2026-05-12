@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('ups_models', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name')->unique();
             $table->string('protocol');
             $table->timestamps();
 

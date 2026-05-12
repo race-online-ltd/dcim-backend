@@ -22,26 +22,27 @@ class ModelWiseAddressMappingController extends Controller
             ->join('ups_models', 'model_wise_address_mapping.model_id', '=', 'ups_models.id')
             ->join('register_addresses', 'model_wise_address_mapping.address_id', '=', 'register_addresses.id')
             ->select([
-                'model_wise_address_mapping.id',
                 'model_wise_address_mapping.model_id',
-                'model_wise_address_mapping.address_id',
-                'model_wise_address_mapping.created_at',
-                'model_wise_address_mapping.updated_at',
                 'ups_models.name        as model_name',
                 'ups_models.protocol    as model_protocol',
-                'register_addresses.name as address_name',
-            ]);
+                DB::raw('GROUP_CONCAT(register_addresses.name SEPARATOR ", ") as address_name'),
+                DB::raw('MIN(model_wise_address_mapping.id) as id'),
+                DB::raw('MAX(model_wise_address_mapping.created_at) as created_at'),
+                DB::raw('MAX(model_wise_address_mapping.updated_at) as updated_at'),
+            ])
+            ->groupBy('model_wise_address_mapping.model_id', 'ups_models.name', 'ups_models.protocol');
 
         // Optional filters
         if ($request->filled('model_id')) {
             $query->where('model_wise_address_mapping.model_id', $request->integer('model_id'));
         }
 
+        // Note: Filter by address_id might be less effective in grouped results, but keeping for compatibility
         if ($request->filled('address_id')) {
             $query->where('model_wise_address_mapping.address_id', $request->integer('address_id'));
         }
 
-        $mappings = $query->orderBy('model_wise_address_mapping.id', 'desc')->get();
+        $mappings = $query->orderBy('id', 'desc')->get();
 
         return response()->json([
             'success' => true,
@@ -56,62 +57,75 @@ class ModelWiseAddressMappingController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'model_id'   => [
-                'required',
+            'model_id'    => 'required|integer|exists:ups_models,id',
+            'address_ids' => 'required|array',
+            'address_ids.*' => [
                 'integer',
-                Rule::exists('ups_models', 'id'),
-            ],
-            'address_id' => [
-                'required',
-                'integer',
-                Rule::exists('register_addresses', 'id'),
-                // Prevent duplicate mapping for the same model+address pair
-                Rule::unique('model_wise_address_mapping')->where(function ($q) use ($request) {
-                    return $q->where('model_id', $request->model_id);
-                }),
+                'exists:register_addresses,id',
             ],
         ]);
 
-        $mapping = ModelWiseAddressMapping::create($validated);
+        $createdCount = 0;
+        foreach ($validated['address_ids'] as $addressId) {
+            // Only create if it doesn't exist already to prevent 500 errors from unique constraint if it exists
+            $exists = ModelWiseAddressMapping::where('model_id', $validated['model_id'])
+                ->where('address_id', $addressId)
+                ->exists();
 
-        // Return with joined data
+            if (!$exists) {
+                ModelWiseAddressMapping::create([
+                    'model_id'   => $validated['model_id'],
+                    'address_id' => $addressId,
+                ]);
+                $createdCount++;
+            }
+        }
+
         return response()->json([
             'success' => true,
-            'message' => 'Mapping created successfully.',
-            'data'    => $this->findWithJoin($mapping->id),
+            'message' => "Successfully created $createdCount mappings.",
         ], 201);
     }
 
     /**
      * GET /api/model-wise-address-mappings/{id}
-     * Show a single mapping with joined data.
+     * Show a single mapping group.
      */
     public function show(int $id): JsonResponse
     {
-        $mapping = $this->findWithJoin($id);
+        $mapping = ModelWiseAddressMapping::find($id);
 
-        if (! $mapping) {
+        if (!$mapping) {
             return response()->json([
                 'success' => false,
                 'message' => 'Mapping not found.',
             ], 404);
         }
 
+        $addressIds = ModelWiseAddressMapping::where('model_id', $mapping->model_id)
+            ->pluck('address_id')
+            ->toArray();
+
         return response()->json([
             'success' => true,
-            'data'    => $mapping,
+            'data'    => [
+                'id'          => $mapping->id,
+                'model_id'    => $mapping->model_id,
+                'address_ids' => $addressIds,
+                'address_id'  => $mapping->address_id, // keep for compatibility
+            ],
         ]);
     }
 
     /**
      * PUT/PATCH /api/model-wise-address-mappings/{id}
-     * Update an existing mapping.
+     * Update mappings for a model.
      */
     public function update(Request $request, int $id): JsonResponse
     {
         $mapping = ModelWiseAddressMapping::find($id);
 
-        if (! $mapping) {
+        if (!$mapping) {
             return response()->json([
                 'success' => false,
                 'message' => 'Mapping not found.',
@@ -119,31 +133,24 @@ class ModelWiseAddressMappingController extends Controller
         }
 
         $validated = $request->validate([
-            'model_id'   => [
-                'sometimes',
-                'required',
-                'integer',
-                Rule::exists('ups_models', 'id'),
-            ],
-            'address_id' => [
-                'sometimes',
-                'required',
-                'integer',
-                Rule::exists('register_addresses', 'id'),
-                Rule::unique('model_wise_address_mapping')
-                    ->where(function ($q) use ($request, $mapping) {
-                        return $q->where('model_id', $request->model_id ?? $mapping->model_id);
-                    })
-                    ->ignore($mapping->id),
-            ],
+            'model_id'      => 'required|integer|exists:ups_models,id',
+            'address_ids'   => 'required|array',
+            'address_ids.*' => 'integer|exists:register_addresses,id',
         ]);
 
-        $mapping->update($validated);
+        // Sync logic: delete existing mappings for the model and create new ones
+        ModelWiseAddressMapping::where('model_id', $mapping->model_id)->delete();
+
+        foreach ($validated['address_ids'] as $addressId) {
+            ModelWiseAddressMapping::create([
+                'model_id'   => $validated['model_id'],
+                'address_id' => $addressId,
+            ]);
+        }
 
         return response()->json([
             'success' => true,
             'message' => 'Mapping updated successfully.',
-            'data'    => $this->findWithJoin($mapping->id),
         ]);
     }
 
@@ -162,11 +169,12 @@ class ModelWiseAddressMappingController extends Controller
             ], 404);
         }
 
-        $mapping->delete();
+        // Delete all mappings for this model since they are shown as a single row in the UI
+        ModelWiseAddressMapping::where('model_id', $mapping->model_id)->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Mapping deleted successfully.',
+            'message' => 'Model mappings deleted successfully.',
         ]);
     }
 

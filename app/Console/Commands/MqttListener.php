@@ -129,7 +129,7 @@ class MqttListener extends Command
     //                                                 $existingSensor = SensorRealTimeValue::where('sensor_id', $sensor['id'])->first();
 
     //                                                 if ($existingSensor) {
-                                                        
+
     //                                                     SensorLogValue::create([
     //                                                         'sensor_id' => $existingSensor->sensor_id,
     //                                                         'value' => $existingSensor->value,
@@ -154,7 +154,7 @@ class MqttListener extends Command
     //                                                 DB::commit();
 
     //                                             } catch (\Exception $e) {
-                                                    
+
     //                                                 DB::rollBack();
     //                                                 Log::error("Failed to process sensor data: " . $e->getMessage());
     //                                                 echo "Error processing sensor data: " . $e->getMessage() . "\n";
@@ -217,7 +217,7 @@ class MqttListener extends Command
     //                     Log::info("MQTT Message Received on topic [$topic]:", $data);
 
     //                     echo "Received from $topic: " . print_r($data, true) . "\n";
-                        
+
     //                     if (isset($data['device_id']) && isset($data['state'])) {
     //                         try {
     //                             $updated = \App\Models\DeviceList::where('id', $data['device_id'])
@@ -235,7 +235,7 @@ class MqttListener extends Command
     //                             echo "❌ Error updating device is_active: " . $e->getMessage() . "\n";
     //                         }
     //                     }
-                    
+
 
     //                     if (isset($data['sensor_types'])) {
     //                         foreach ($data['sensor_types'] as $sensorType) {
@@ -300,7 +300,7 @@ class MqttListener extends Command
     // }
 
 
-    
+
 
     public function handle()
     {
@@ -332,7 +332,7 @@ class MqttListener extends Command
 
                         event(new MQTTPublishEvent($data));
 
-                        Log::info("MQTT Message Received on topic [$topic]:", $data);
+                        // Log::info("MQTT Message Received on topic [$topic]:", $data);
 
                         echo "Received from $topic: " . print_r($data, true) . "\n";
 
@@ -408,5 +408,5 @@ class MqttListener extends Command
             $this->error("Could not connect to MQTT broker");
         }
     }
-    
+
 }

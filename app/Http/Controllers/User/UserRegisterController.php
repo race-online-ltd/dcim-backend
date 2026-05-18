@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Spatie\Permission\Models\Role;
 
 
 class UserRegisterController extends Controller
@@ -52,6 +53,13 @@ class UserRegisterController extends Controller
             'password_change' => 0,
         ]);
 
+        try {
+            $role = Role::findById((int) $request->role_id, config('auth.defaults.guard', 'web'));
+            $user->syncRoles([$role->name]);
+        } catch (\Throwable $e) {
+            return response()->json(['error' => 'Invalid role selected'], 422);
+        }
+
         return response()->json(['message' => 'User registered successfully', 'user' => $user], 201);
     }
 
@@ -95,6 +103,16 @@ class UserRegisterController extends Controller
         }
 
         $user->update($request->all());
+
+        if ($request->filled('role_id')) {
+            try {
+                $role = Role::findById((int) $request->role_id, config('auth.defaults.guard', 'web'));
+                $user->syncRoles([$role->name]);
+            } catch (\Throwable $e) {
+                return response()->json(['error' => 'Invalid role selected'], 422);
+            }
+        }
+
         return response()->json(['message' => 'User updated successfully', 'user' => $user]);
     }
 

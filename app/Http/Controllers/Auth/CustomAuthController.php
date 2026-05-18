@@ -35,6 +35,9 @@ class CustomAuthController extends Controller
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
+        // Ensure the assigned Spatie role matches the user's stored role_id.
+        $user->syncRoleFromRoleId();
+
         // Get data_center_ids
         $dataCenterIds = DcOwnerMapping::where('user_id', $user->id)
                             ->pluck('data_center_id')

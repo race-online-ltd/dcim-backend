@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use DB;
@@ -65,7 +66,20 @@ class RoleController extends Controller
 
     public function create()
     {
-        $permissions = \Spatie\Permission\Models\Permission::all();
+        $guardName = config('auth.defaults.guard', 'web');
+
+        $apiRouteNames = collect(Route::getRoutes())
+            ->filter(fn($route) => $route->getName() && str_starts_with($route->uri(), 'api/'))
+            ->map(fn($route) => $route->getName())
+            ->unique()
+            ->values();
+
+        $permissions = Permission::where('guard_name', $guardName)
+            ->whereIn('name', $apiRouteNames)
+            ->selectRaw('MIN(id) as id, name')
+            ->groupBy('name')
+            ->orderBy('name')
+            ->get();
 
         return response()->json([
             'permissions' => $permissions
@@ -105,14 +119,24 @@ class RoleController extends Controller
             'permission' => 'required|array',
         ]);
 
-        $permissionsID = array_map('intval', $validated['permission']);
+        $permissionIds = collect($validated['permission'])
+            ->map('intval')
+            ->filter()
+            ->unique()
+            ->toArray();
+
+        $guardName = config('auth.defaults.guard', 'web');
+        $validPermissionIds = Permission::whereIn('id', $permissionIds)
+            ->where('guard_name', $guardName)
+            ->pluck('id')
+            ->toArray();
 
         $role = Role::create([
             'name' => $validated['name'],
-            'guard_name' => 'web', // 👈 VERY IMPORTANT
+            'guard_name' => $guardName,
         ]);
 
-        $role->syncPermissions($permissionsID);
+        $role->syncPermissions($validPermissionIds);
 
         return response()->json([
             'message' => 'Role created successfully'
@@ -168,11 +192,28 @@ class RoleController extends Controller
 
     public function edit($id)
     {
+        $guardName = config('auth.defaults.guard', 'web');
+
+        $apiRouteNames = collect(Route::getRoutes())
+            ->filter(fn($route) => $route->getName() && str_starts_with($route->uri(), 'api/'))
+            ->map(fn($route) => $route->getName())
+            ->unique()
+            ->values();
+
         $role = \Spatie\Permission\Models\Role::findOrFail($id);
-        $permission = \Spatie\Permission\Models\Permission::all();
-        $rolePermissions = DB::table("role_has_permissions")
-            ->where("role_has_permissions.role_id", $id)
-            ->pluck('role_has_permissions.permission_id')
+        $permission = Permission::where('guard_name', $guardName)
+            ->whereIn('name', $apiRouteNames)
+            ->selectRaw('MIN(id) as id, name')
+            ->groupBy('name')
+            ->orderBy('name')
+            ->get();
+
+        $rolePermissions = Permission::join('role_has_permissions', 'permissions.id', '=', 'role_has_permissions.permission_id')
+            ->where('role_has_permissions.role_id', $id)
+            ->where('permissions.guard_name', $guardName)
+            ->whereIn('permissions.name', $apiRouteNames)
+            ->pluck('permissions.id')
+            ->unique()
             ->toArray();
 
         return response()->json([
@@ -219,12 +260,23 @@ class RoleController extends Controller
             'permission' => 'required|array',
         ]);
 
+        $guardName = config('auth.defaults.guard', 'web');
         $role = \Spatie\Permission\Models\Role::findOrFail($id);
         $role->name = $validated['name'];
         $role->save();
 
-        $permissionsID = array_map('intval', $validated['permission']);
-        $role->syncPermissions($permissionsID);
+        $permissionIds = collect($validated['permission'])
+            ->map('intval')
+            ->filter()
+            ->unique()
+            ->toArray();
+
+        $validPermissionIds = Permission::whereIn('id', $permissionIds)
+            ->where('guard_name', $guardName)
+            ->pluck('id')
+            ->toArray();
+
+        $role->syncPermissions($validPermissionIds);
 
         return response()->json([
             'message' => 'Role updated successfully'

@@ -12,6 +12,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SendSmsController;
 use App\Http\Controllers\AIChatController;
 use App\Http\Controllers\MasterDataController;
+use App\Http\Controllers\MyController;
 use App\Http\Controllers\DataCenterCreationController;
 use App\Http\Controllers\DataCenterController;
 use App\Http\Controllers\DcOwnerMappingController;
@@ -255,7 +256,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     //        Route::get('partner/mapping', [MasterDataController::class, 'getPartnerMapping'])->middleware('can:getPartnerMapping')->name('getPartnerMapping');
     //        Route::post('dc-partner-mappings', [DcOwnerMappingController::class, 'storeDcPartnerMapping'])->middleware('can:storeDcPartnerMapping')->name('storeDcPartnerMapping');
     //        Route::post('dc-owner-mappings', [DcOwnerMappingController::class, 'store'])->middleware('can:dc_owner_mappings_store')->name('dc_owner_mappings_store');
-        Route::post('/logout', [CustomAuthController::class, 'logout'])->middleware('can:logout1')->name('logout1');
+        Route::post('/logout', [CustomAuthController::class, 'logout'])->name('logout1');
     //        Route::get('/settings/data-centers', [DataCenterController::class, 'index'])->name('datacenter-index');
         Route::get('/user', function (Request $request) {
             return $request->user();
@@ -435,11 +436,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
     //Route::get('/settings/data-centers', [DataCenterController::class, 'index']);
     Route::get('/data-centers/{id}', [DataCenterController::class, 'show'])->middleware('can:DataCenterController-show')->name('DataCenterController-show');
     Route::put('/data-centers/{id}', [DataCenterController::class, 'update'])->middleware('can:DataCenterController-update')->name('DataCenterController-update');
-    Route::delete('/data-centers/{id}', [DataCenterController::class, 'destroy'])->middleware('can:DataCenterController-destroy')->name('DataCenterController-destroy');
+        Route::delete('/data-centers/{id}', [DataCenterCreationController::class, 'destroy'])->middleware('can:DataCenterController-destroy')->name('DataCenterController-destroy');
 
+        // Route::get('/my-new-endpoint', [MyController::class, 'myMethod'])
+        //     ->middleware('can:mycontroller.my-method')
+        //     ->name('mycontroller.my-method');
 
-});
-
+        Route::get('/my-new-endpoint', [MyController::class, 'myMethod']);
 
     Route::prefix('alarm')->group(function () {
         Route::get('/report/sensor-log', [ReportController::class, 'getSensorData']); 
@@ -455,7 +458,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::get('/sensor-locations', [ReportController::class, 'getSensorLocations']);
 
+   
 
+});
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
+
+
+

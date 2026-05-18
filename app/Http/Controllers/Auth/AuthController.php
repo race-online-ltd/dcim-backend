@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
@@ -20,9 +22,14 @@ class AuthController extends Controller
             ]);
         }
 
+        $user = $request->user();
+        if (method_exists($user, 'syncRoleFromRoleId')) {
+            $user->syncRoleFromRoleId();
+        }
+
         return response()->json([
-            'token' => $request->user()->createToken('auth_token')->plainTextToken,
-            'user' => $request->user(),
+            'token' => $user->createToken('auth_token')->plainTextToken,
+            'user' => $user,
         ]);
     }
 

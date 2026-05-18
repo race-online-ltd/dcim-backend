@@ -127,6 +127,152 @@ use Illuminate\Support\Facades\Log;
 
 
 
+// class MqttListener extends Command
+// {
+//     protected $signature = 'mqtt:listen';
+//     protected $description = 'Listen to MQTT topics';
+
+//     public function handle()
+//     {
+//         $server = env('MQTT_HOST', '172.17.118.138');
+//         $port = env('MQTT_PORT', 1883);
+//         $username = env('MQTT_USERNAME', 'admin');
+//         $password = env('MQTT_PASSWORD', 'Power-RnD');
+//         $client_id = 'laravel_mqtt_listener_' . uniqid();
+
+//         $mqtt = new phpMQTT($server, $port, $client_id);
+
+//         if ($mqtt->connect(true, null, $username, $password)) {
+//             $this->info("Connected to MQTT broker");
+
+//             $topicList = DB::table('device_lists as dl')
+//                 ->select(DB::raw("dl.secret_key as topic"))
+//                 ->pluck('topic')
+//                 ->toArray();
+
+//             $this->info("Subscribing to topics: " . implode(', ', $topicList));
+
+//             $topics = [];
+
+//             foreach ($topicList as $topic) {
+//                 $topics[$topic] = [
+//                     'qos' => 0,
+//                     'function' => function ($topic, $msg) {
+//                         $data = json_decode($msg, true);
+
+//                         event(new MQTTPublishEvent($data));
+
+//                         echo "Received from $topic: " . print_r($data, true) . "\n";
+
+//                         // ✅ Update device is_active from live MQTT state payload
+//                         if (isset($data['device_id']) && isset($data['state'])) {
+//                             \App\Models\DeviceList::where('id', $data['device_id'])
+//                                 ->update(['is_active' => $data['state']]);
+
+//                             echo "Updated Device ID {$data['device_id']} is_active = {$data['state']}\n";
+//                         }
+
+//                         if (isset($data['sensor_types'])) {
+//                             foreach ($data['sensor_types'] as $sensorType) {
+//                                 foreach ($sensorType as $key => $sensorArray) {
+//                                     if (is_array($sensorArray)) {
+//                                         foreach ($sensorArray as $sensor) {
+//                                             if (isset($sensor['id']) && isset($sensor['val'])) {
+//                                                 try {
+//                                                     DB::beginTransaction();
+
+//                                                     // ─── Main Sensor Insert ───────────────────────────
+//                                                     $existingSensor = SensorRealTimeValue::where('sensor_id', $sensor['id'])->first();
+
+//                                                     if ($existingSensor) {
+//                                                         SensorLogValue::create([
+//                                                             'sensor_id' => $existingSensor->sensor_id,
+//                                                             'value'     => $existingSensor->value,
+//                                                             'created_at' => now(),
+//                                                             'updated_at' => now()
+//                                                         ]);
+
+//                                                         $existingSensor->delete();
+
+//                                                         echo "Logged and deleted previous data for Sensor ID: {$sensor['id']}\n";
+//                                                     }
+
+//                                                     SensorRealTimeValue::create([
+//                                                         'sensor_id'   => $sensor['id'],
+//                                                         'value'       => $sensor['val'],
+//                                                         'received_at' => now(),
+//                                                         'topic'       => $topic
+//                                                     ]);
+
+//                                                     echo "Inserted Sensor ID: {$sensor['id']} with Value: {$sensor['val']} from topic: $topic\n";
+
+//                                                     // ─── Replicate Sensor ID 7 → Sensor ID 89 ────────
+//                                                     if ((int)$sensor['id'] === 7) {
+//                                                         $replicaSensorId    = 89;
+//                                                         $replicaDataCenterId = 3;
+
+//                                                         $existingReplica = SensorRealTimeValue::where('sensor_id', $replicaSensorId)->first();
+
+//                                                         if ($existingReplica) {
+//                                                             SensorLogValue::create([
+//                                                                 'sensor_id'  => $existingReplica->sensor_id,
+//                                                                 'value'      => $existingReplica->value,
+//                                                                 'created_at' => now(),
+//                                                                 'updated_at' => now()
+//                                                             ]);
+
+//                                                             $existingReplica->delete();
+
+//                                                             echo "Logged and deleted previous data for Replica Sensor ID: {$replicaSensorId}\n";
+//                                                         }
+
+//                                                         SensorRealTimeValue::create([
+//                                                             'sensor_id'      => $replicaSensorId,
+//                                                             'value'          => $sensor['val'],
+//                                                             'received_at'    => now(),
+//                                                             'topic'          => $topic,
+//                                                             'data_center_id' => $replicaDataCenterId
+//                                                         ]);
+
+//                                                         echo "Replicated Sensor ID 7 → Sensor ID {$replicaSensorId} | Value: {$sensor['val']} | Data Center ID: {$replicaDataCenterId}\n";
+//                                                     }
+//                                                     // ─────────────────────────────────────────────────
+
+//                                                     DB::commit();
+
+//                                                 } catch (\Exception $e) {
+//                                                     DB::rollBack();
+//                                                     Log::error("Failed to process sensor data: " . $e->getMessage());
+//                                                     echo "Error processing sensor data: " . $e->getMessage() . "\n";
+//                                                 }
+//                                             }
+//                                         }
+//                                     }
+//                                 }
+//                             }
+//                         }
+//                     }
+//                 ];
+//             }
+
+//             // Subscribe to all topics
+//             $mqtt->subscribe($topics, 0);
+
+//             // Keep listening
+//             while ($mqtt->proc()) {
+//                 // Process incoming messages
+//             }
+
+//             $mqtt->close();
+
+//         } else {
+//             $this->error("Could not connect to MQTT broker");
+//         }
+//     }
+// }
+
+
+
 class MqttListener extends Command
 {
     protected $signature = 'mqtt:listen';
@@ -172,6 +318,17 @@ class MqttListener extends Command
                             echo "Updated Device ID {$data['device_id']} is_active = {$data['state']}\n";
                         }
 
+                        // ✅ Replication map: Physical Sensor ID => [Logical Sensor ID, Data Center ID]
+                        $replicationMap = [
+                            7  => ['sensor_id' => 89, 'data_center_id' => 3],
+                            10 => ['sensor_id' => 90, 'data_center_id' => 3],
+                            12 => ['sensor_id' => 91, 'data_center_id' => 3],
+                            14 => ['sensor_id' => 92, 'data_center_id' => 3],
+                            86 => ['sensor_id' => 93, 'data_center_id' => 3],
+                            87 => ['sensor_id' => 94, 'data_center_id' => 3],
+                            88 => ['sensor_id' => 95, 'data_center_id' => 3],
+                        ];
+
                         if (isset($data['sensor_types'])) {
                             foreach ($data['sensor_types'] as $sensorType) {
                                 foreach ($sensorType as $key => $sensorArray) {
@@ -206,10 +363,10 @@ class MqttListener extends Command
 
                                                     echo "Inserted Sensor ID: {$sensor['id']} with Value: {$sensor['val']} from topic: $topic\n";
 
-                                                    // ─── Replicate Sensor ID 7 → Sensor ID 85 ────────
-                                                    if ((int)$sensor['id'] === 7) {
-                                                        $replicaSensorId    = 85;
-                                                        $replicaDataCenterId = 3;
+                                                    // ─── Replicate Sensor based on replication map ────
+                                                    if (isset($replicationMap[(int)$sensor['id']])) {
+                                                        $replicaSensorId     = $replicationMap[(int)$sensor['id']]['sensor_id'];
+                                                        $replicaDataCenterId = $replicationMap[(int)$sensor['id']]['data_center_id'];
 
                                                         $existingReplica = SensorRealTimeValue::where('sensor_id', $replicaSensorId)->first();
 
@@ -234,7 +391,7 @@ class MqttListener extends Command
                                                             'data_center_id' => $replicaDataCenterId
                                                         ]);
 
-                                                        echo "Replicated Sensor ID 7 → Sensor ID {$replicaSensorId} | Value: {$sensor['val']} | Data Center ID: {$replicaDataCenterId}\n";
+                                                        echo "Replicated Sensor ID {$sensor['id']} → Sensor ID {$replicaSensorId} | Value: {$sensor['val']} | Data Center ID: {$replicaDataCenterId}\n";
                                                     }
                                                     // ─────────────────────────────────────────────────
 

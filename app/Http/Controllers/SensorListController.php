@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ModelWiseAddressMapping;
 use App\Models\SensorList;
 use App\Models\SensorTypeList;
 use App\Models\StateConfig;
@@ -71,6 +72,213 @@ class SensorListController extends Controller
 //    }
 
 
+    // public function store(Request $request)
+    // {
+    //     $validated = $request->validate([
+    //         'data_center_id' => 'required|integer',
+    //         'device_id' => 'required|integer',
+    //         'sensor_type_list_id' => 'required|integer',
+    //         'trigger_type_id' => 'required|integer',
+    //         'sound_status' => 'sometimes|integer',
+    //         'blink_status' => 'sometimes|integer',
+    //         'sensor_name' => 'nullable|string|max:255',
+    //         'location' => 'nullable|string|max:255',
+    //         'model_id' => 'nullable|integer',
+    //         'register_address' => 'nullable|string|max:255',
+    //         'parameter_name' => 'nullable|string|max:255',
+    //         'multiplication_factor' => 'nullable|float',
+    //         'unit' => 'nullable|string|max:50',
+    //         'status' => 'sometimes|integer',
+    //         'timestamp' => 'sometimes|date'
+    //     ]);
+
+    //     try {
+    //         // Generate a 7-digit unique ID
+    //         do {
+    //             $uniqueId = mt_rand(1000000, 9999999);
+    //         } while (SensorList::where('unique_id', $uniqueId)->exists());
+
+    //         $validated['unique_id'] = $uniqueId;
+
+    //         // Start database transaction
+    //         DB::beginTransaction();
+
+    //         $sensorList = SensorList::create($validated);
+
+    //         // Check if sensor type is Water (4) or Smoke (5)
+    //         if (in_array($validated['sensor_type_list_id'], [3, 4, 5, 6])) {
+    //             switch ($validated['sensor_type_list_id']) {
+    //                 case 3:
+    //                     $stateConfigs = [
+    //                         [
+    //                             'value' => 0,
+    //                             'name' => 'Alarm',
+    //                             'attache_sound' => null,
+    //                             'url' => null,
+    //                             'color' => '#ff0000',
+    //                             'sound' => 1,
+    //                             'blink' => 1,
+    //                             'created_at' => now(),
+    //                             'updated_at' => now()
+    //                         ],
+    //                         [
+    //                             'value' => 1,
+    //                             'name' => 'Normal',
+    //                             'attache_sound' => null,
+    //                             'url' => null,
+    //                             'color' => '#00ff00',
+    //                             'sound' => 0,
+    //                             'blink' => 0,
+    //                             'created_at' => now(),
+    //                             'updated_at' => now()
+    //                         ]
+    //                     ];
+    //                     break;
+
+    //                 case 4:
+    //                     $stateConfigs = [
+    //                         [
+    //                             'value' => 0,
+    //                             'name' => 'Normal',
+    //                             'attache_sound' => null,
+    //                             'url' => null,
+    //                             'color' => '#00ff00',
+    //                             'sound' => 0,
+    //                             'blink' => 0,
+    //                             'created_at' => now(),
+    //                             'updated_at' => now()
+    //                         ],
+    //                         [
+    //                             'value' => 1,
+    //                             'name' => 'Warning',
+    //                             'attache_sound' => null,
+    //                             'url' => null,
+    //                             'color' => '#ffff00',
+    //                             'sound' => 0,
+    //                             'blink' => 1,
+    //                             'created_at' => now(),
+    //                             'updated_at' => now()
+    //                         ],
+    //                         [
+    //                             'value' => 2,
+    //                             'name' => 'Leaking',
+    //                             'attache_sound' => null,
+    //                             'url' => null,
+    //                             'color' => '#ff0000',
+    //                             'sound' => 1,
+    //                             'blink' => 1,
+    //                             'created_at' => now(),
+    //                             'updated_at' => now()
+    //                         ],
+    //                         [
+    //                             'value' => 3,
+    //                             'name' => 'Fault',
+    //                             'attache_sound' => null,
+    //                             'url' => null,
+    //                             'color' => '#9c9c9c',
+    //                             'sound' => 1,
+    //                             'blink' => 1,
+    //                             'created_at' => now(),
+    //                             'updated_at' => now()
+    //                         ]
+    //                     ];
+    //                     break;
+
+    //                 case 5:
+    //                     $stateConfigs = [
+    //                         [
+    //                             'value' => 0,
+    //                             'name' => 'Normal',
+    //                             'attache_sound' => null,
+    //                             'url' => null,
+    //                             'color' => '#00ff00',
+    //                             'sound' => 0,
+    //                             'blink' => 0,
+    //                             'created_at' => now(),
+    //                             'updated_at' => now()
+    //                         ],
+    //                         [
+    //                             'value' => 1,
+    //                             'name' => 'Alarm',
+    //                             'attache_sound' => null,
+    //                             'url' => null,
+    //                             'color' => '#ff0000',
+    //                             'sound' => 1,
+    //                             'blink' => 1,
+    //                             'created_at' => now(),
+    //                             'updated_at' => now()
+    //                         ]
+    //                     ];
+    //                     break;
+
+    //                 case 6:
+    //                     $stateConfigs = [
+    //                         [
+    //                             'value' => 0,
+    //                             'name' => 'Close',
+    //                             'attache_sound' => null,
+    //                             'url' => null,
+    //                             'color' => '#00ff00',
+    //                             'sound' => 0,
+    //                             'blink' => 0,
+    //                             'created_at' => now(),
+    //                             'updated_at' => now()
+    //                         ],
+    //                         [
+    //                             'value' => 1,
+    //                             'name' => 'Open',
+    //                             'attache_sound' => null,
+    //                             'url' => null,
+    //                             'color' => '#ff0000',
+    //                             'sound' => 0,
+    //                             'blink' => 1,
+    //                             'created_at' => now(),
+    //                             'updated_at' => now()
+    //                         ]
+    //                     ];
+    //                     break;
+    //             }
+
+    //             // Add sensor_id to each config
+    //             $stateConfigs = array_map(function($config) use ($sensorList) {
+    //                 $config['sensor_id'] = $sensorList->id;
+    //                 return $config;
+    //             }, $stateConfigs);
+
+    //             // Insert all configs at once
+    //             $inserted = StateConfig::insert($stateConfigs);
+
+    //             if (!$inserted) {
+    //                 throw new \Exception('Failed to insert state configurations');
+    //             }
+
+    //             Log::info('State configs created for sensor', [
+    //                 'sensor_id' => $sensorList->id,
+    //                 'configs_count' => count($stateConfigs)
+    //             ]);
+    //         }
+
+    //         // Commit transaction if everything is successful
+    //         DB::commit();
+
+    //         return response()->json($sensorList, 201);
+
+    //     } catch (\Exception $e) {
+    //         // Rollback transaction on error
+    //         DB::rollBack();
+
+    //         Log::error('Sensor creation failed', [
+    //             'error' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString()
+    //         ]);
+
+    //         return response()->json([
+    //             'message' => 'Sensor creation failed',
+    //             'error' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -81,7 +289,13 @@ class SensorListController extends Controller
             'sound_status' => 'sometimes|integer',
             'blink_status' => 'sometimes|integer',
             'sensor_name' => 'nullable|string|max:255',
-            'location' => 'required|string|max:255',
+            'location' => 'nullable|string|max:255',
+            'model_id' => 'nullable|integer',
+            'ip_address' => 'nullable|string|max:255',
+            'register_address' => 'nullable|string|max:255',
+            'parameter_name' => 'nullable|string|max:255',
+            'multiplication_factor' => 'nullable|float',
+            'unit' => 'nullable|string|max:50',
             'status' => 'sometimes|integer',
             'timestamp' => 'sometimes|date'
         ]);
@@ -252,6 +466,30 @@ class SensorListController extends Controller
                 ]);
             }
 
+            // Insert into model_wise_address_mapping if both model_id and register_address are provided
+            if (!empty($validated['model_id']) && !empty($validated['register_address'])) {
+                $alreadyMapped = ModelWiseAddressMapping::where('model_id', $validated['model_id'])
+                    ->where('address_id', $validated['register_address'])
+                    ->exists();
+
+                if (!$alreadyMapped) {
+                    ModelWiseAddressMapping::create([
+                        'model_id'   => $validated['model_id'],
+                        'address_id' => $validated['register_address'],
+                    ]);
+
+                    Log::info('Model wise address mapping created', [
+                        'model_id'   => $validated['model_id'],
+                        'address_id' => $validated['register_address'],
+                    ]);
+                } else {
+                    Log::info('Model wise address mapping already exists, skipping', [
+                        'model_id'   => $validated['model_id'],
+                        'address_id' => $validated['register_address'],
+                    ]);
+                }
+            }
+
             // Commit transaction if everything is successful
             DB::commit();
 
@@ -292,7 +530,13 @@ class SensorListController extends Controller
             'sound_status' => 'sometimes|integer',
             'blink_status' => 'sometimes|integer',
             'sensor_name' => 'nullable|string|max:255',
-            'location' => 'sometimes|string|max:255',
+            'location' => 'nullable|string|max:255',
+            'model_id' => 'nullable|integer',
+            'ip_address' => 'nullable|string|max:255',
+            'register_address' => 'nullable|string|max:255',
+            'parameter_name' => 'nullable|string|max:255',
+            'multiplication_factor' => 'nullable|float',
+            'unit' => 'nullable|string|max:50',
             'status' => 'sometimes|integer',
             'timestamp' => 'sometimes|date'
         ]);

@@ -19,6 +19,10 @@ return new class extends Migration
             $table->string('secret_key', 255);
             $table->tinyInteger('status')->length(2);
             $table->integer('is_active')->length(2)->default(1);
+            $table->integer('model_id')->length(11)->nullable();
+            $table->string('ip', 255)->nullable();
+            $table->integer('slave_id')->length(8)->nullable();
+            $table->integer('type')->length(4);
             $table->timestamps();
 
             // Optional foreign key constraint

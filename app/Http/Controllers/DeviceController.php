@@ -10,7 +10,7 @@ class DeviceController extends Controller
 {
     public function index()
     {
-        $devices = DeviceList::with('dataCenter')->get();
+        $devices = DeviceList::with(['dataCenter', 'model'])->get();
         return response()->json($devices);
     }
 
@@ -29,7 +29,11 @@ class DeviceController extends Controller
             'location' => 'required|string|max:255',
             'secret_key' => 'nullable|string|max:255',
             'control_topic' => 'nullable|string|max:255',
-            'status' => 'required|integer|between:0,2'
+            'status' => 'required|integer|between:0,2',
+            'ip' => 'nullable|string|max:255',
+            'slave_id' => 'nullable|integer',
+            'type' => 'integer|between:0,99',
+            'model_id' => 'nullable|integer|exists:ups_models,id'
         ]);
 
         $device = DeviceList::create($validated);
@@ -46,7 +50,11 @@ class DeviceController extends Controller
             'location' => 'sometimes|string|max:255',
             'secret_key' => 'nullable|string|max:255',
             'control_topic' => 'nullable|string|max:255',
-            'status' => 'sometimes|integer|between:0,2'
+            'status' => 'sometimes|integer|between:0,2',
+            'ip' => 'nullable|string|max:255',
+            'slave_id' => 'nullable|integer',
+            'type' => 'integer|between:0,99',
+            'model_id' => 'nullable|integer|exists:ups_models,id'
         ]);
 
         $device->update($validated);

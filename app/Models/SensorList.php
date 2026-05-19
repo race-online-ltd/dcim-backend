@@ -11,6 +11,7 @@ class SensorList extends Model
 
     protected $table = 'sensor_lists';
 
+
     protected $fillable = [
         'data_center_id',
         'device_id',
@@ -21,6 +22,12 @@ class SensorList extends Model
         'blink_status',
         'sensor_name',
         'location',
+        'model_id',
+        'ip_address',
+        'register_address',
+        'parameter_name',
+        'multiplication_factor',
+        'unit',
         'status',
         'timestamp'
     ];
@@ -47,6 +54,11 @@ class SensorList extends Model
     public function triggerType()
     {
         return $this->belongsTo(TriggerType::class, 'trigger_type_id');
+    }
+
+    public function model()
+    {
+        return $this->belongsTo(UpsModel::class, 'model_id');
     }
 
 }

@@ -21,7 +21,13 @@ return new class extends Migration
             $table->tinyInteger('sound_status')->default(0);
             $table->tinyInteger('blink_status')->default(0);
             $table->string('sensor_name', 255)->nullable();
-            $table->string('location', 255);
+            $table->string('location', 255)->nullable();
+            $table->integer('model_id')->nullable();
+            $table->string('register_address', 255)->nullable();
+            $table->string('ip_address', 255)->nullable();
+            $table->string('parameter_name', 255)->nullable();
+            $table->float('multiplication_factor')->nullable();
+            $table->string('unit', 50)->nullable();
             $table->tinyInteger('status')->default(1);
             $table->timestamp('timestamp');
             $table->timestamps();

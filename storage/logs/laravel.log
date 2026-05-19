@@ -19596,3 +19596,5 @@ Did you mean one of these?
 #40 /home/samir/MyCode/DCIM/dcim-backend/vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php(23): require_once('...')
 #41 {main}
 "} 
+[2026-05-19 13:18:30] local.ERROR: Failed to process sensor data: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '111' for key 'sensor_real_time_values.sensor_id' (Connection: mysql, Host: 172.17.118.82, Port: 3306, Database: datacenter_db, SQL: insert into `sensor_real_time_values` (`sensor_id`, `value`, `updated_at`, `created_at`) values (111, 49.9, 2026-05-19 13:18:30, 2026-05-19 13:18:30))  
+[2026-05-19 13:19:08] local.ERROR: Failed to process sensor data: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '3' for key 'sensor_real_time_values.sensor_id' (Connection: mysql, Host: 172.17.118.82, Port: 3306, Database: datacenter_db, SQL: insert into `sensor_real_time_values` (`sensor_id`, `value`, `updated_at`, `created_at`) values (3, 33, 2026-05-19 13:19:08, 2026-05-19 13:19:08))  

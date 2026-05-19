@@ -11,6 +11,9 @@ return new class extends Migration
         Schema::create('register_addresses', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('parameter_name');
+            $table->float('multiplication_factor');
+            $table->enum('unit', ['V', 'A', 'kW', '%', '°C', 'Hz']);
             $table->timestamps();
 
             // Index

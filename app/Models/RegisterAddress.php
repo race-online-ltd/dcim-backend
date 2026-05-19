@@ -10,5 +10,8 @@ class RegisterAddress extends Model
 
     protected $fillable = [
         'name',
+        'parameter_name',
+        'multiplication_factor',
+        'unit',
     ];
 }

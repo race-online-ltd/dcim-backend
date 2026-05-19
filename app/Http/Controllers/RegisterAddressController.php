@@ -25,6 +25,9 @@ class RegisterAddressController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:register_addresses,name',
+            'parameter_name' => 'required|string|max:255',
+            'multiplication_factor' => 'required|numeric',
+            'unit' => 'required|in:V,A,kW,%,°C,Hz',
         ]);
 
         $address = RegisterAddress::create($validated);
@@ -69,6 +72,9 @@ class RegisterAddressController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255|unique:register_addresses,name,' . $id,
+            'parameter_name' => 'sometimes|required|string|max:255',
+            'multiplication_factor' => 'sometimes|required|numeric',
+            'unit' => 'sometimes|required|in:V,A,kW,%,°C,Hz',
         ]);
 
         $address->update($validated);

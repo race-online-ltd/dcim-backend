@@ -39,6 +39,7 @@ use App\Http\Controllers\UpsModelController;
 use App\Http\Controllers\RegisterAddressController;
 use App\Http\Controllers\UpsModelConfigController;
 use App\Http\Controllers\ModelWiseAddressMappingController;
+use App\Http\Controllers\ModbusController;
 
 
 
@@ -231,6 +232,9 @@ Route::get('/operation-modes', [DoConfigController::class, 'operationMode']);
 Route::get('/operation-schedulling', [DoConfigController::class, 'schedullingList']);
 Route::get('/operation-repeat', [DoConfigController::class, 'repeatList']);
 Route::post('/store-control-configurations', [DoConfigController::class, 'storeOperationTrigger']);
+
+
+Route::get('/modbus-data', [ModbusController::class, 'index']);
 
 
 

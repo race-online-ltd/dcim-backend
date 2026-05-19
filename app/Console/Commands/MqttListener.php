@@ -474,15 +474,15 @@ class MqttListener extends Command
                             echo "Updated Device ID {$data['device_id']} is_active = {$data['state']}\n";
                         }
 
-                        // ✅ Replication map: Physical Sensor ID => [Logical Sensor ID, Data Center ID]
+                        // ✅ Replication map: Physical Sensor ID => [Logical Sensor ID, Data Center ID, Device ID]
                         $replicationMap = [
-                            7  => ['sensor_id' => 89, 'data_center_id' => 3],
-                            10 => ['sensor_id' => 90, 'data_center_id' => 3],
-                            12 => ['sensor_id' => 91, 'data_center_id' => 3],
-                            14 => ['sensor_id' => 92, 'data_center_id' => 3],
-                            86 => ['sensor_id' => 93, 'data_center_id' => 3],
-                            87 => ['sensor_id' => 94, 'data_center_id' => 3],
-                            88 => ['sensor_id' => 95, 'data_center_id' => 3],
+                            7  => ['sensor_id' => 89, 'data_center_id' => 3, 'device_id' => 3],
+                            10 => ['sensor_id' => 90, 'data_center_id' => 3, 'device_id' => 3],
+                            12 => ['sensor_id' => 91, 'data_center_id' => 3, 'device_id' => 3],
+                            14 => ['sensor_id' => 92, 'data_center_id' => 3, 'device_id' => 3],
+                            86 => ['sensor_id' => 93, 'data_center_id' => 3, 'device_id' => 3],
+                            87 => ['sensor_id' => 94, 'data_center_id' => 3, 'device_id' => 3],
+                            88 => ['sensor_id' => 95, 'data_center_id' => 3, 'device_id' => 3],
                         ];
 
                         if (isset($data['sensor_types'])) {
@@ -532,6 +532,7 @@ class MqttListener extends Command
                                                 if (isset($replicationMap[(int)$sensor['id']])) {
                                                     $replicaSensorId     = $replicationMap[(int)$sensor['id']]['sensor_id'];
                                                     $replicaDataCenterId = $replicationMap[(int)$sensor['id']]['data_center_id'];
+                                                    $replicaDeviceId     = $replicationMap[(int)$sensor['id']]['device_id'];
 
                                                     try {
                                                         DB::beginTransaction();
@@ -556,10 +557,11 @@ class MqttListener extends Command
                                                             'value'          => $sensor['val'],
                                                             'received_at'    => now(),
                                                             'topic'          => $topic,
-                                                            'data_center_id' => $replicaDataCenterId
+                                                            'data_center_id' => $replicaDataCenterId,
+                                                            'device_id'      => $replicaDeviceId
                                                         ]);
 
-                                                        echo "Replicated Sensor ID {$sensor['id']} → Sensor ID {$replicaSensorId} | Value: {$sensor['val']} | Data Center ID: {$replicaDataCenterId}\n";
+                                                        echo "Replicated Sensor ID {$sensor['id']} → Sensor ID {$replicaSensorId} | Value: {$sensor['val']} | Data Center ID: {$replicaDataCenterId} | Device ID: {$replicaDeviceId}\n";
 
                                                         DB::commit();
 

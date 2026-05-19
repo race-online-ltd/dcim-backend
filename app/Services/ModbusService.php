@@ -9,30 +9,25 @@ use ModbusTcpClient\Packet\ResponseFactory;
 use ModbusTcpClient\Packet\ModbusFunction\ReadHoldingRegistersRequest;
 use ModbusTcpClient\Packet\ModbusFunction\ReadHoldingRegistersResponse;
 
+
 class ModbusService
 {
-    protected $connection;
-
-    public function __construct()
-    {
-        $this->connection = BinaryStreamConnection::getBuilder()
-            ->setHost('172.16.3.12')
-            ->setPort(502)
-            ->setConnectTimeoutSec(5)
-            ->build();
-    }
-
-    public function readHoldingRegisters($startAddress = 0, $quantity = 1)
+    public function readHoldingRegistersFromDevice(string $ip, int $slaveId, int $startAddress, int $quantity = 1)
     {
         try {
+            $connection = BinaryStreamConnection::getBuilder()
+                ->setHost($ip)
+                ->setPort(502)
+                ->setConnectTimeoutSec(5)
+                ->build();
 
             $packet = new ReadHoldingRegistersRequest(
                 $startAddress,
                 $quantity,
-                1
+                $slaveId
             );
 
-            $binaryData = $this->connection
+            $binaryData = $connection
                 ->connect()
                 ->sendAndReceive($packet);
 
@@ -42,12 +37,14 @@ class ModbusService
                 throw new Exception('Unexpected response type');
             }
 
-            return $response->getData();
+            return [
+                'error' => false,
+                'data'  => $response->getData()
+            ];
 
         } catch (Exception $e) {
-
             return [
-                'error' => true,
+                'error'   => true,
                 'message' => $e->getMessage()
             ];
         }

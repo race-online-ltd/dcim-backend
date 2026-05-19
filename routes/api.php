@@ -289,6 +289,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         });
         Route::prefix('sensor-lists')->group(function () {
+            Route::get('/by-model/{modelId}', [SensorListController::class, 'getAddressesByModel']);
             Route::get('/', [SensorListController::class, 'index'])->middleware('can:sensor-index')->name('sensor-index');
             Route::post('/', [SensorListController::class, 'store'])->middleware('can:sensor-create')->name('sensor-create');
             Route::get('/{id}', [SensorListController::class, 'show'])->middleware('can:sensor-show')->name('sensor-show');

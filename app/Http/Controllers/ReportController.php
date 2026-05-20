@@ -485,7 +485,7 @@ class ReportController extends Controller
 
                 ORDER BY 
                     s.data_center_id, 
-                    s.sensor_name,
+                    v.sensor_id,
                     v.created_at
             ";
 

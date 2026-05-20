@@ -518,6 +518,13 @@ class MqttListener extends Command
                                                         'topic'       => $topic
                                                     ]);
 
+                                                    SensorLogValue::create([
+                                                            'sensor_id'  => $existingSensor->sensor_id,
+                                                            'value'      => $existingSensor->value,
+                                                            'created_at' => now(),
+                                                            'updated_at' => now()
+                                                        ]);
+
                                                     echo "Inserted Sensor ID: {$sensor['id']} with Value: {$sensor['val']} from topic: $topic\n";
 
                                                     DB::commit();
@@ -560,6 +567,14 @@ class MqttListener extends Command
                                                             'data_center_id' => $replicaDataCenterId,
                                                             'device_id'      => $replicaDeviceId
                                                         ]);
+
+
+                                                        SensorLogValue::create([
+                                                                'sensor_id'  => $existingReplica->sensor_id,
+                                                                'value'      => $existingReplica->value,
+                                                                'created_at' => now(),
+                                                                'updated_at' => now()
+                                                            ]);
 
                                                         echo "Replicated Sensor ID {$sensor['id']} → Sensor ID {$replicaSensorId} | Value: {$sensor['val']} | Data Center ID: {$replicaDataCenterId} | Device ID: {$replicaDeviceId}\n";
 

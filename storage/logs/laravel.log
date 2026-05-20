@@ -19699,3 +19699,15 @@ Did you mean one of these?
 "} 
 [2026-05-19 16:52:48] local.INFO: Model wise address mapping already exists, skipping {"model_id":4,"address_id":"97"} 
 [2026-05-19 17:01:13] local.INFO: Model wise address mapping created {"model_id":4,"address_id":"90"} 
+[2026-05-19 18:05:25] local.INFO: Model wise address mapping created {"model_id":4,"address_id":"222"} 
+[2026-05-19 18:09:04] local.INFO: Model wise address mapping created {"model_id":4,"address_id":"97"} 
+[2026-05-19 18:12:51] local.INFO: Model wise address mapping created {"model_id":4,"address_id":"98"} 
+[2026-05-20 10:47:23] local.ERROR: Error fetching devices by data center: SQLSTATE[HY000] [2002] Network is unreachable (Connection: mysql, Host: 172.17.118.82, Port: 3306, Database: datacenter_db, SQL: 
+                SELECT dcc.id AS datacenter_id, dcc.name AS datacenter,dl.id AS device_id, dl.name AS device, dl.is_active,
+                    dl.location, dl.updated_at
+                FROM device_lists dl
+                JOIN data_center_creations dcc ON dl.data_center_id = dcc.id
+                WHERE dl.status = 1
+                AND dcc.id IN (1,4,3,2)
+                ORDER BY dcc.id, dl.id
+                )  
